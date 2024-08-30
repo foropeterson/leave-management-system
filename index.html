@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leave Application System</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f4f8;
+            margin: 0;
+            padding: 0;
+            transition: background-color 1s ease-in-out; /* Smooth transition for background color */
+        }
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        main {
+            width: 90%;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2 {
+            margin-top: 0;
+            font-size: 1.5em;
+        }
+        .hidden {
+            display: none;
+        }
+        .error {
+            color: #d9534f;
+            font-size: 0.875em;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="text"], input[type="date"], select, textarea {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        textarea {
+            height: 100px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 1em;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .approve-button {
+            background-color: #007bff;
+        }
+        .approve-button:hover {
+            background-color: #0056b3;
+        }
+        .reject-button {
+            background-color: #dc3545;
+        }
+        .reject-button:hover {
+            background-color: #c82333;
+        }
+        .feedback {
+            margin-top: 10px;
+            font-weight: bold;
+            color: #333;
+        }
+        .feedback.hidden {
+            display: none;
+        }
+        #home-buttons button {
+            margin: 5px;
+        }
+        @media (max-width: 600px) {
+            input[type="text"], input[type="date"], select, textarea {
+                width: 100%;
+            }
+            button {
+                width: 100%;
+                padding: 15px;
+                font-size: 1.2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Leave Application System</h1>
+    </header>
+
+    <main>
+        <!-- Login Form -->
+        <div id="login">
+            <h2>Login</h2>
+            <form id="loginForm">
+                <label for="username">Username:</label>
+                <input type="text" id="username" required>
+                <span id="usernameError" class="error"></span>
+                <label for="employeeNumber">Employee Number:</label>
+                <input type="text" id="employeeNumber" required>
+                <span id="employeeNumberError" class="error"></span>
+                <button type="submit">Login</button>
+            </form>
+        </div>
+
+        <!-- Home Buttons -->
+        <div id="home-buttons" class="hidden">
+            <button id="applyBtn">Apply for Leave</button>
+            <button id="viewBtn">View Leave Requests</button>
+            <button id="adminBtn" class="hidden">Admin Dashboard</button>
+        </div>
+
+        <!-- Leave Application Form -->
+        <div id="leave-application" class="hidden">
+            <h2>Leave Application Form</h2>
+            <form id="leaveForm">
+                <label for="name">Name:</label>
+                <input type="text" id="name" required>
+                <span id="nameError" class="error"></span>
+                <label for="department">Department:</label>
+                <input type="text" id="department" required>
+                <span id="departmentError" class="error"></span>
+                <label for="leaveType">Leave Type:</label>
+                <select id="leaveType" required>
+                    <option value="">Select Leave Type</option>
+                    <option value="sick">Sick Leave</option>
+                    <option value="vacation">Vacation</option>
+                    <option value="personal">Personal</option>
+                </select>
+                <span id="leaveTypeError" class="error"></span>
+                <label for="startDate">Start Date:</label>
+                <input type="date" id="startDate" required>
+                <span id="startDateError" class="error"></span>
+                <label for="endDate">End Date:</label>
+                <input type="date" id="endDate" required>
+                <span id="endDateError" class="error"></span>
+                <label for="reason">Reason:</label>
+                <textarea id="reason" required></textarea>
+                <span id="reasonError" class="error"></span>
+                <label for="workFromHomeCheckbox">Work from Home:</label>
+                <input type="checkbox" id="workFromHomeCheckbox">
+                <br><br>
+                <button type="submit">Submit Leave Request</button>
+            </form>
+        </div>
+
+        <!-- View Leave Requests -->
+        <div id="leave-requests" class="hidden">
+            <h2>Leave Requests</h2>
+            <ul id="requestsList"></ul>
+        </div>
+
+        <!-- Leave History -->
+        <div id="leave-history" class="hidden">
+            <h2>Leave History</h2>
+            <!-- Content for leave history goes here -->
+        </div>
+
+        <!-- Admin Dashboard -->
+        <div id="admin-dashboard" class="hidden">
+            <h2>Admin Dashboard</h2>
+            <ul id="adminRequestsList"></ul>
+        </div>
+
+        <!-- Notifications -->
+        <div id="notifications" class="hidden">
+            <!-- Notifications content goes here -->
+        </div>
+
+        <!-- Success Audio -->
+        <audio id="successAudio" src="success.mp3" preload="auto"></audio>
+    </main>
+
+    <script>
+        // Array of background colors
+        const colors = [
+            '#ff7e5f', '#feb47b', '#6a11cb', '#2575fc', '#ff6f61', '#de64ff',
+            '#ffb347', '#ffccff', '#66b3ff', '#99ff99', '#ff99cc', '#ffcc99',
+            '#ccffcc', '#c2c2f0', '#ff6666', '#c2f0c2', '#d0f0c0', '#b3b3b3'
+        ];
+
+        let colorIndex = 0;
+
+        function changeBackgroundColor() {
+            document.body.style.backgroundColor = colors[colorIndex];
+            colorIndex = (colorIndex + 1) % colors.length;
+            setTimeout(changeBackgroundColor, 5000); // Change color every 5 seconds
+        }
+
+        // Call the function to start the background color slideshow
+        changeBackgroundColor();
+
+        // Initial setup
+        const loginForm = document.getElementById('loginForm');
+        const loginContainer = document.getElementById('login');
+        const homeButtons = document.getElementById('home-buttons');
+        const leaveApplication = document.getElementById('leave-application');
+        const leaveRequests = document.getElementById('leave-requests');
+        const leaveHistory = document.getElementById('leave-history');
+        const adminDashboard = document.getElementById('admin-dashboard');
+        const notifications = document.getElementById('notifications');
+        const applyBtn = document.getElementById('applyBtn');
+        const viewBtn = document.getElementById('viewBtn');
+        const adminBtn = document.getElementById('adminBtn');
+        const successAudio = document.getElementById('successAudio');
+
+        function authenticateUser(username, employeeNumber) {
+            // Always return true to allow any username and employee number
+            return true;
+        }
+
+        function getLeaveAmount(leaveType) {
+            switch (leaveType) {
+                case 'sick':
+                    return 10000;
+                case 'vacation':
+                    return 7500;
+                case 'personal':
+                    return 5000;
+                default:
+                    return 0;
+            }
+        }
+
+        loginForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const username = document.getElementById('username').value.trim();
+            const employeeNumber = document.getElementById('employeeNumber').value.trim();
+
+            if (authenticateUser(username, employeeNumber)) {
+                localStorage.setItem('loggedIn', 'true');
+                localStorage.setItem('username', username);
+                loginContainer.style.display = 'none';
+                homeButtons.style.display = 'block';
+                adminBtn.classList.toggle('hidden', username !== 'admin');
+            } else {
+                document.getElementById('usernameError').textContent = 'Invalid username or employee number';
+                document.getElementById('employeeNumberError').textContent = 'Invalid username or employee number';
+            }
+        });
+
+        function saveLeaveRequest(request) {
+            let history = JSON.parse(localStorage.getItem('leaveHistory')) || [];
+            request.submissionTime = new Date().toLocaleString(); // Capture the current date and time
+            request.amount = getLeaveAmount(request.leaveType); // Calculate leave amount
+            history.push(request);
+            localStorage.setItem('leaveHistory', JSON.stringify(history));
+        }
+
+        applyBtn.addEventListener('click', function() {
+            leaveApplication.style.display = 'block';
+            leaveRequests.style.display = 'none';
+            leaveHistory.style.display = 'none';
+            adminDashboard.style.display = 'none';
+            notifications.style.display = 'none';
+        });
+
+        viewBtn.addEventListener('click', function() {
+            leaveApplication.style.display = 'none';
+            leaveRequests.style.display = 'block';
+            leaveHistory.style.display = 'none';
+            adminDashboard.style.display = 'none';
+            notifications.style.display = 'none';
+            loadLeaveRequests();
+        });
+
+        adminBtn.addEventListener('click', function() {
+            leaveApplication.style.display = 'none';
+            leaveRequests.style.display = 'none';
+            leaveHistory.style.display = 'none';
+            adminDashboard.style.display = 'block';
+            notifications.style.display = 'none';
+            loadAdminDashboard();
+        });
+
+        document.getElementById('leaveForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const request = {
+                name: document.getElementById('name').value.trim(),
+                department: document.getElementById('department').value.trim(),
+                leaveType: document.getElementById('leaveType').value,
+                startDate: document.getElementById('startDate').value,
+                endDate: document.getElementById('endDate').value,
+                reason: document.getElementById('reason').value,
+                workFromHome: document.getElementById('workFromHomeCheckbox').checked,
+                feedback: ''
+            };
+
+            saveLeaveRequest(request);
+
+            // Clear the form
+            document.getElementById('leaveForm').reset();
+            leaveApplication.style.display = 'none';
+            notifications.style.display = 'block';
+            notifications.innerHTML = '<p>Leave request submitted successfully.</p>';
+
+            // Play success audio
+            successAudio.play();
+        });
+
+        function loadLeaveRequests() {
+            const requestsList = document.getElementById('requestsList');
+            requestsList.innerHTML = '';
+            const history = JSON.parse(localStorage.getItem('leaveHistory')) || [];
+            // Display only the top 3 requests
+            const recentRequests = history.slice(-3);
+            recentRequests.forEach(req => {
+                const listItem = document.createElement('li');
+                listItem.style.padding = '10px';
+                listItem.style.borderBottom = '1px solid #ddd';
+                listItem.style.marginBottom = '10px';
+                listItem.innerHTML = `
+                    <strong>${req.name}</strong> (${req.department}) - ${req.leaveType} <br>
+                    From: ${new Date(req.startDate).toLocaleDateString()} To: ${new Date(req.endDate).toLocaleDateString()} <br>
+                    Reason: ${req.reason} <br>
+                    ${req.workFromHome ? '<strong>Work from Home:</strong> Yes <br>' : ''}
+                    <strong>Submitted on:</strong> ${req.submissionTime} <br>
+                    <strong>Amount Issued:</strong> KES ${req.amount}
+                `;
+                requestsList.appendChild(listItem);
+            });
+        }
+
+        function loadAdminDashboard() {
+            const adminRequestsList = document.getElementById('adminRequestsList');
+            adminRequestsList.innerHTML = '';
+            const history = JSON.parse(localStorage.getItem('leaveHistory')) || [];
+            // Display only the top 3 requests
+            const recentRequests = history.slice(-3);
+            recentRequests.forEach(req => {
+                const listItem = document.createElement('li');
+                listItem.style.padding = '10px';
+                listItem.style.borderBottom = '1px solid #ddd';
+                listItem.style.marginBottom = '10px';
+                listItem.innerHTML = `
+                    <strong>${req.name}</strong> (${req.department}) - ${req.leaveType} <br>
+                    From: ${new Date(req.startDate).toLocaleDateString()} To: ${new Date(req.endDate).toLocaleDateString()} <br>
+                    Reason: ${req.reason} <br>
+                    ${req.workFromHome ? '<strong>Work from Home:</strong> Yes <br>' : ''}
+                    <strong>Submitted on:</strong> ${req.submissionTime} <br>
+                    <strong>Amount Issued:</strong> KES ${req.amount} <br>
+                    <span class="feedback ${req.feedback ? '' : 'hidden'}">${req.feedback}</span>
+                    <button class="approve-button">Approve</button>
+                    <button class="reject-button">Reject</button>
+                `;
+                adminRequestsList.appendChild(listItem);
+
+                listItem.querySelector('.approve-button').addEventListener('click', () => {
+                    req.feedback = 'Leave request approved.';
+                    localStorage.setItem('leaveHistory', JSON.stringify(history));
+                    loadAdminDashboard(); // Reload dashboard
+                });
+
+                listItem.querySelector('.reject-button').addEventListener('click', () => {
+                    req.feedback = 'Leave request rejected.';
+                    localStorage.setItem('leaveHistory', JSON.stringify(history));
+                    loadAdminDashboard(); // Reload dashboard
+                });
+            });
+        }
+    </script>
+</body>
+</html>
